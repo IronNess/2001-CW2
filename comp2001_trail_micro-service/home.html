@@ -1,13 +1,19 @@
-ECHO is on.
+<!-- templates/home.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMP2001 Trail Micro-Service</title>
+    <title>RP Flask REST API</title>
 </head>
 <body>
-    <h1>Welcome to the Trail Micro-Service</h1>
-    <p>Manage Trails, Locations, and Users with our RESTful API </p>
+    <h1>
+        Hello, People!
+    </h1>
+    <ul>
+        {% for person in people %}
+        <li>{{ person.fname }} {{ person.lname }}</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
