@@ -1,1 +1,19 @@
 ECHO is on.
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Trail Micro-Service API"
+paths:
+  /trails:
+    get:
+      summary: "Get all trails"
+      responses:
+        200:
+          description: "A list of trails"
+  /users:
+    get:
+      summary: "Get all users"
+      responses:
+        200:
+          description: "A list of users"
+
