@@ -1,21 +1,25 @@
-import pyodbc
+# config.py
 
-def get_db_connection():
-    server = 'DIST-6-505.uopnet.plymouth.ac.uk'
-    database = 'COMP2001_VRadmore'
-    username = 'VRadmore'
-    password = 'Lc1M674*'
-    driver = '{ODBC Driver 18 for SQL Server}'
+import pathlib
+import connexion
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 
-    conn_str = (
-        f'DRIVER={driver};'
-        f'SERVER={server};'
-        f'DATABASE={database};'
-        f'UID={username};'
-        f'PWD={password};'
-        'Encrypt=Yes;'
-        'TrustServerCertificate=Yes;'
-        'Connection Timeout=30;'
-    )
-    return pyodbc.connect(conn_str)
+basedir = pathlib.Path(__file__).parent.resolve()
+connex_app = connexion.App(__name__, specification_dir=basedir)
 
+app = connex_app.app
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    "mssql+pyodbc:///?odbc_connect="
+    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "SERVER=dist-6-505.uopnet.plymouth.ac.uk;"
+    "DATABASE=your_database_name;"
+    "UID=your_username;"
+    "PWD=your_password;"
+    "TrustServerCertificate=yes;"
+    "Encrypt=yes;"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
+ma = Marshmallow(app)
