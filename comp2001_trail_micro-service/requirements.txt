@@ -31,4 +31,5 @@ urllib3==2.0.6
 Werkzeug==2.2.2
 pyodbc==4.0.35
 flask-cors==3.0.10
-pytz==2022.5
+pytz==2024.2
+connexion[flask]==2.14.1
