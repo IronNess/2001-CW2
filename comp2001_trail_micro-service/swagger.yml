@@ -1,5 +1,3 @@
-# swagger.yml
-
 openapi: 3.0.0
 info:
   title: "Trail Application REST API"
@@ -10,157 +8,159 @@ servers:
   - url: "/api"
 
 components:
-schemas:
-Trail:
-type: "object"
-required:
-- TrailName
-properties:
-TrailID:
-type: "integer"
-TrailName:
-type: "string"
-format: "date-time"
-Location:
-type: "object"
-required:
-- Latitude
-- Longitude
-- Sequence
-properties:
-LocationID:
-type: "integer"
-TrailID:
-type: "integer"
-Latitude:
-type: "number"
-format: "float"
-Longitude:
-type: "number"
-format: "float"
-Sequence:
-type: "integer"
-TrailInfo:
-type: "object"
-required:
-- TrailID
-porperties:
-TrailID:
-type: "integer"
-Description:
-type: "string"
-Distance:
-type: "number"
-format: "float"
-Difficulty:
-type: "string"
-RouteType:
-type: "string"
-EstimaedTime:
-type: "string"
-ElevationGain:
-type: "number"
-format: "float"
+  schemas:
+    Trail:
+      type: "object"
+      required:
+        - TrailName
+      properties:
+        TrailID:
+          type: "integer"
+        TrailName:
+          type: "string"
+        CreatedAt:
+          type: "string"
+          format: "date-time"
+    Location:
+      type: "object"
+      required:
+        - Latitude
+        - Longitude
+        - Sequence
+      properties:
+        LocationID:
+          type: "integer"
+        TrailID:
+          type: "integer"
+        Latitude:
+          type: "number"
+          format: "float"
+        Longitude:
+          type: "number"
+          format: "float"
+        Sequence:
+          type: "integer"
+    TrailInfo:
+      type: "object"
+      required:
+        - TrailID
+      properties:
+        TrailID:
+          type: "integer"
+        Description:
+          type: "string"
+        Distance:
+          type: "number"
+          format: "float"
+        Difficulty:
+          type: "string"
+        RouteType:
+          type: "string"
+        EstimatedTime:
+          type: "string"
+        ElevationGain:
+          type: "number"
+          format: "float"
 
 paths:
-operationID: "trails.create"
-tags:
-- "trails"
-summary: "Create a new trail"
-requestBody:
-description: "Trail to create"
-required: true
-content:
-application/json:
-schema:
-$ref: "#/components/schemas/Trail"
-responses:
-201:
-description: "Successfully created trail"
+  /trails:
+    post:
+      operationId: "trails.create"
+      tags:
+        - "Trails"
+      summary: "Create a new trail"
+      requestBody:
+        description: "Trail to create"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Trail"
+      responses:
+        201:
+          description: "Successfully created trail"
 
-/trails/{trailID}:
-get:
-operationId: "trails.read_one"
-tags:
-- "Trails"
-summary: "Get details of a specific trail"
-parameters:
-- name: "TrailID"
-in: path
-required: true
-schema:
-type: "integer"
-responses:
-200:
-description: "Trail details retrieved"
-content:
-application/json:
-schema:
-$ref: "#/components/schemas/Trail"
+  /trails/{TrailID}:
+    get:
+      operationId: "trails.read_one"
+      tags:
+        - "Trails"
+      summary: "Get details of a specific trail"
+      parameters:
+        - name: "TrailID"
+          in: path
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        200:
+          description: "Trail details retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trail"
+    delete:
+      operationId: "trails.delete"
+      tags:
+        - "Trails"
+      summary: "Delete a trail"
+      parameters:
+        - name: "TrailID"
+          in: path
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        204:
+          description: "Trail deleted"
 
-delete:
-operationId: "trails.delete"
-tags:
-- "Trails"
-summary: "Delete a trail"
-parameters:
-- name: "TrailID"
-in: path
-required: true
-schema:
-type: "integer"
-responses:
-204:
-description: "Trail deleted"
+  /locations:
+    get:
+      operationId: "locations.read_all"
+      tags:
+        - "Locations"
+      summary: "Get all locations"
+      responses:
+        200:
+          description: "Locations retrieved"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Location"
+    post:
+      operationId: "locations.create"
+      tags:
+        - "Locations"
+      summary: "Add a location to a trail"
+      requestBody:
+        description: "Location to add"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Location"
+      responses:
+        201:
+          description: "Location added"
 
-/locations:
-get:
-operationId: "locations.read_all"
-tags:
-- "Locations"
-summary: "Get all locations"
-responses:
-200:
-description: "Locations retrieved"
-content:
-application/json:
-schema:
-type: "array"
-items:
-$ref: "#/components/schemas/Location"
-
-post:
-operationId: "locations.create"
-tags:
-- "Locations"
-summary: "Add a location to a trail"
-requestBody:
-description: "Location to add"
-required: true
-content:
-application/json:
-schema:
-$ref: "#/components/schemas/Location"
-responses:
-201:
-description: "Location added"
-
-/trailinfo/{TrailID}:
-get:
-operationId: "trailinfo.read_one"
-tags:
-- "TrailInfo"
-summary: "Get trail information for a specific trail"
-parameters:
-- name: "TrailID"
-in: path
-required: true
-schema:
-type: "integer"
-responses:
-200:
-description: "Trail information retrieved"
-content:
-application/json:
-schema:
-$ref: "#/components/schemas/TrailInfo"
+  /trailinfo/{TrailID}:
+    get:
+      operationId: "trailinfo.read_one"
+      tags:
+        - "TrailInfo"
+      summary: "Get trail information for a specific trail"
+      parameters:
+        - name: "TrailID"
+          in: path
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        200:
+          description: "Trail information retrieved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrailInfo"
