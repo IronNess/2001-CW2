@@ -15,7 +15,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
     "SERVER=dist-6-505.uopnet.plymouth.ac.uk;"
     "DATABASE=COMP2001_VRadmore;"
     "UID=VRadmore;"
-    "PWD=;LclM674*"
+    "PWD=LclM674*;"
     "TrustServerCertificate=yes;"
     "Encrypt=yes;"
 )
