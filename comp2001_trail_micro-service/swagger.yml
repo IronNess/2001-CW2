@@ -23,7 +23,7 @@ type: "string"
 format: "date-time"
 Location:
 type: "object"
-required;
+required:
 - Latitude
 - Longitude
 - Sequence
