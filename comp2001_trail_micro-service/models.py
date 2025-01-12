@@ -1,26 +1,51 @@
-# models.py
+from config import db, ma  # Import database and Marshmallow instances
 
-from datetime import datetime
-# from zoneinfo import ZoneInfo
-import pytz
+# Define the Trail model
+class Trail(db.Model):
+    __tablename__ = "trails"
+    TrailID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    TrailName = db.Column(db.String(100), nullable=False)
+    CreatedAt = db.Column(db.DateTime, default=db.func.now())
 
-from config import db, ma
+# Define the TrailInfo model
+class TrailInfo(db.Model):
+    __tablename__ = "trail_info"
+    TrailID = db.Column(db.Integer, db.ForeignKey("trails.TrailID"), primary_key=True)
+    Description = db.Column(db.Text)
+    Distance = db.Column(db.Float)
+    Difficulty = db.Column(db.String(50))
 
-class Person(db.Model):
-    __tablename__ = "person"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    lname = db.Column(db.String(32), unique=True)
-    fname = db.Column(db.String(32))
-    timestamp = db.Column(
-        db.DateTime, default=lambda: datetime.now(pytz.timezone('Europe/London')),
-        onupdate=lambda: datetime.now(pytz.timezone('Europe/London'))
-    )
+# Define the Location model
+class Location(db.Model):
+    __tablename__ = "locations"
+    LocationID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    TrailID = db.Column(db.Integer, db.ForeignKey("trails.TrailID"), nullable=False)
+    Latitude = db.Column(db.Float, nullable=False)
+    Longitude = db.Column(db.Float, nullable=False)
+    Sequence = db.Column(db.Integer, nullable=False)
 
-class PersonSchema(ma.SQLAlchemyAutoSchema):
+# Define schemas for serialization
+class TrailSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        model = Person
+        model = Trail
         load_instance = True
-        sql_session = db.session
 
-person_schema = PersonSchema()
-people_schema = PersonSchema(many=True)
+class TrailInfoSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = TrailInfo
+        load_instance = True
+
+class LocationSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Location
+        load_instance = True
+
+# Create schema instances for serialization
+trail_schema = TrailSchema()
+trails_schema = TrailSchema(many=True)
+
+trail_info_schema = TrailInfoSchema()
+trail_infos_schema = TrailInfoSchema(many=True)
+
+location_schema = LocationSchema()
+locations_schema = LocationSchema(many=True)
