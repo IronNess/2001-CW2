@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: "Trail Application REST API"
-  description: "An API to manage trails, locations, and trail information"
+  description: "An API to manage trails, locations, and trail information, including tags."
   version: "1.0.0"
 
 servers:
@@ -16,7 +16,13 @@ paths:
         - "Trails"
       responses:
         '200':
-          description: "OK"
+          description: "A list of all trails"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trail"
     post:
       operationId: "trails.create_trail"
       summary: "Create a new trail"
@@ -30,7 +36,11 @@ paths:
               $ref: "#/components/schemas/Trail"
       responses:
         '201':
-          description: "Created"
+          description: "The created trail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trail"
 
   /trails/{trail_id}:
     get:
@@ -46,7 +56,11 @@ paths:
             type: "integer"
       responses:
         '200':
-          description: "OK"
+          description: "Trail details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trail"
         '404':
           description: "Trail not found"
     put:
@@ -68,7 +82,11 @@ paths:
               $ref: "#/components/schemas/Trail"
       responses:
         '200':
-          description: "OK"
+          description: "Updated trail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trail"
         '404':
           description: "Trail not found"
     delete:
@@ -84,9 +102,89 @@ paths:
             type: "integer"
       responses:
         '204':
-          description: "No content"
+          description: "Trail deleted successfully"
         '404':
           description: "Trail not found"
+
+  /tags:
+    get:
+      operationId: "trails.get_all_tags"
+      summary: "Get all tags"
+      tags:
+        - "Tags"
+      responses:
+        '200':
+          description: "A list of all tags"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      operationId: "trails.create_tag"
+      summary: "Create a new tag"
+      tags:
+        - "Tags"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tag"
+      responses:
+        '201':
+          description: "The created tag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+
+  /trails/{trail_id}/tags:
+    get:
+      operationId: "trails.get_tags_for_trail"
+      summary: "Get all tags associated with a specific trail"
+      tags:
+        - "Tags"
+      parameters:
+        - name: "trail_id"
+          in: path
+          required: true
+          schema:
+            type: "integer"
+      responses:
+        '200':
+          description: "Tags for the trail"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      operationId: "trails.add_tag_to_trail"
+      summary: "Associate a tag with a trail"
+      tags:
+        - "Tags"
+      parameters:
+        - name: "trail_id"
+          in: path
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tag"
+      responses:
+        '201':
+          description: "Tag added to trail"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
 
 components:
   schemas:
@@ -97,9 +195,24 @@ components:
       properties:
         TrailID:
           type: integer
+          example: 1
         TrailName:
           type: string
+          example: "Plymbridge Circular"
         CreatedAt:
           type: string
           format: date-time
+          example: "2025-01-12T16:26:51.200Z"
+
+    Tag:
+      type: object
+      required:
+        - Name
+      properties:
+        TagID:
+          type: integer
+          example: 1
+        Name:
+          type: string
+          example: "Dog-friendly"
 
