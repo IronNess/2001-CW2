@@ -2,21 +2,28 @@ from config import db, ma
 
 class Trail(db.Model):
     __tablename__ = "trails"
+    __table_args__ = {"schema": "TrailApp"}
     TrailID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     TrailName = db.Column(db.String(100), nullable=False)
     CreatedAt = db.Column(db.DateTime, default=db.func.now())
 
 class TrailInfo(db.Model):
-    __tablename__ = "trail_info"
-    TrailID = db.Column(db.Integer, db.ForeignKey("trails.TrailID"), primary_key=True)
+    __tablename__ = "TrailInfo"
+    __table_args__ = {"schema": "TrailApp"}
+    TrailID = db.Column(db.Integer, db.ForeignKey("TrailApp.trails.TrailID"), primary_key=True)
     Description = db.Column(db.Text)
     Distance = db.Column(db.Float)
     Difficulty = db.Column(db.String(50))
+    RouteType = db.Column(db.String(50))
+    EstimatedTime = db.Column(db.String(50))
+    ElevationGain = db.Column(db.Float)
+    LengthKM = db.Column(db.Float)
 
 class Location(db.Model):
     __tablename__ = "locations"
+    __table_args__ = {"schema": "TrailApp"}
     LocationID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    TrailID = db.Column(db.Integer, db.ForeignKey("trails.TrailID"), nullable=False)
+    TrailID = db.Column(db.Integer, db.ForeignKey("TrailApp.trails.TrailID"), nullable=False)
     Latitude = db.Column(db.Float, nullable=False)
     Longitude = db.Column(db.Float, nullable=False)
     Sequence = db.Column(db.Integer, nullable=False)
