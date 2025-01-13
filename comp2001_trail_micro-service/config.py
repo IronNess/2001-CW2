@@ -1,6 +1,7 @@
 # config.py
 
 import pathlib
+import logging
 import connexion
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -13,7 +14,7 @@ app = connex_app.app
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     "mssql+pyodbc:///?odbc_connect="
     "DRIVER={ODBC Driver 18 for SQL Server};"
-    "SERVER=dist-6-505.uopnet.plymouth.ac.uk;"
+    "SERVER=DIST-6-505.uopnet.plymouth.ac.uk;"
     "DATABASE=COMP2001_VRadmore;"
     "UID=VRadmore;"
     "PWD=LclM674*;"
@@ -24,3 +25,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
