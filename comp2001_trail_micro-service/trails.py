@@ -1,8 +1,6 @@
-# trails.py
-
 from flask import jsonify, request
 from config import db
-from models import Trail, TrailInfo, Location
+from models import Trail, TrailInfo, Location, Tag, TrailTag
 
 def get_all_trails():
     """Return a JSON list of all trails."""
@@ -31,6 +29,7 @@ def create_trail():
     return jsonify(response), 201
 
 def get_trail_by_id(trail_id):
+    """Return details of a specific trail."""
     trail = Trail.query.get(trail_id)
     if not trail:
         return jsonify({"error": "Trail not found"}), 404
@@ -64,7 +63,6 @@ def get_trail_by_id(trail_id):
     }
     return jsonify(response)
 
-
 def update_trail(trail_id):
     """Update an existing trail's name."""
     data = request.get_json()
@@ -91,3 +89,44 @@ def delete_trail(trail_id):
     db.session.delete(trail)
     db.session.commit()
     return jsonify({"message": "Trail deleted successfully"}), 204
+
+# New Tag Functions
+def get_all_tags():
+    """Return a list of all tags."""
+    tags = Tag.query.all()
+    output = [{"TagID": t.TagID, "Name": t.Name} for t in tags]
+    return jsonify(output)
+
+def create_tag():
+    """Create a new tag."""
+    data = request.get_json()
+    new_tag = Tag(Name=data["Name"])
+    db.session.add(new_tag)
+    db.session.commit()
+    return jsonify({"TagID": new_tag.TagID, "Name": new_tag.Name}), 201
+
+def get_tags_for_trail(trail_id):
+    """Get all tags associated with a specific trail."""
+    tags = (
+        db.session.query(Tag)
+        .join(TrailTag, Tag.TagID == TrailTag.TagID)
+        .filter(TrailTag.TrailID == trail_id)
+        .all()
+    )
+    output = [{"TagID": t.TagID, "Name": t.Name} for t in tags]
+    return jsonify(output)
+
+def add_tag_to_trail(trail_id):
+    """Associate a tag with a trail."""
+    data = request.get_json()
+    tag_id = data["TagID"]
+    # Check if tag exists
+    tag = Tag.query.get(tag_id)
+    if not tag:
+        return jsonify({"error": "Tag not found"}), 404
+
+    # Associate tag with trail
+    new_trail_tag = TrailTag(TrailID=trail_id, TagID=tag_id)
+    db.session.add(new_trail_tag)
+    db.session.commit()
+    return jsonify({"message": f"Tag '{tag.Name}' added to trail ID {trail_id}"}), 201
