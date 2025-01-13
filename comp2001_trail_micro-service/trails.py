@@ -31,7 +31,6 @@ def create_trail():
     return jsonify(response), 201
 
 def get_trail_by_id(trail_id):
-    """Return details of a specific trail."""
     trail = Trail.query.get(trail_id)
     if not trail:
         return jsonify({"error": "Trail not found"}), 404
@@ -51,15 +50,20 @@ def get_trail_by_id(trail_id):
         "Description": trail_info.Description if trail_info else None,
         "Distance": trail_info.Distance if trail_info else None,
         "Difficulty": trail_info.Difficulty if trail_info else None,
+        "RouteType": trail_info.RouteType if trail_info else None,
+        "EstimatedTime": trail_info.EstimatedTime if trail_info else None,
+        "ElevationGain": trail_info.ElevationGain if trail_info else None,
+        "LengthKM": trail_info.LengthKM if trail_info else None,
         "Locations": [
             {
                 "Latitude": loc.Latitude,
                 "Longitude": loc.Longitude,
                 "Sequence": loc.Sequence
             } for loc in locations
-        ]
+        ] if locations else []
     }
     return jsonify(response)
+
 
 def update_trail(trail_id):
     """Update an existing trail's name."""
