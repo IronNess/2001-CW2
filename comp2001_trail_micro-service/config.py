@@ -9,6 +9,7 @@ basedir = pathlib.Path(__file__).parent.resolve()
 connex_app = connexion.App(__name__, specification_dir=basedir)
 
 app = connex_app.app
+
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     "mssql+pyodbc:///?odbc_connect="
     "DRIVER={ODBC Driver 18 for SQL Server};"
