@@ -1,4 +1,6 @@
 from config import db, ma
+from werkzeug.security import generate_password_hash, check_password_hash
+import bcrypt
 
 class Trail(db.Model):
     __tablename__ = "trails"
@@ -39,6 +41,26 @@ class TrailTag(db.Model):
     __table_args__ = {"schema": "TrailApp"}
     TrailID = db.Column(db.Integer, db.ForeignKey("TrailApp.trails.TrailID"), primary_key=True)
     TagID = db.Column(db.Integer, db.ForeignKey("TrailApp.Tags.TagID"), primary_key=True)
+
+class Role(db.Model):
+    __tablename__ = "roles"
+    __table_args__ = {"schema": "TrailApp"}
+    RoleID = db.Column(db.Integer, primary_key=True)
+    RoleName = db.Column(db.String(50))
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    __table_args__ = {'schema': 'TrailApp'}
+    UserID = db.Column(db.Integer, primary_key=True)
+    Email = db.Column(db.String(255), unique=True, nullable=False)
+    PasswordHash = db.Column(db.String(255))
+    RoleID = db.Column(db.Integer)
+
+    def check_password(self, password):
+        """Check hashed password."""
+        return bcrypt.checkpw(password.encode('utf-8'), self.PasswordHash.encode('utf-8'))
+
 
 class TrailSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
