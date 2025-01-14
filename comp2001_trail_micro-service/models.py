@@ -42,11 +42,6 @@ class TrailTag(db.Model):
     TrailID = db.Column(db.Integer, db.ForeignKey("TrailApp.trails.TrailID"), primary_key=True)
     TagID = db.Column(db.Integer, db.ForeignKey("TrailApp.Tags.TagID"), primary_key=True)
 
-class Role(db.Model):
-    __tablename__ = "roles"
-    __table_args__ = {"schema": "TrailApp"}
-    RoleID = db.Column(db.Integer, primary_key=True)
-    RoleName = db.Column(db.String(50))
 
 
 class User(db.Model):
@@ -55,12 +50,19 @@ class User(db.Model):
     UserID = db.Column(db.Integer, primary_key=True)
     Email = db.Column(db.String(255), unique=True, nullable=False)
     PasswordHash = db.Column(db.String(255))
-    RoleID = db.Column(db.Integer)
+    RoleID = db.Column(db.Integer, db.ForeignKey('TrailApp.roles.RoleID'))
+
+    
+    role = db.relationship('Role', backref='users')
 
     def check_password(self, password):
-        """Check hashed password."""
         return bcrypt.checkpw(password.encode('utf-8'), self.PasswordHash.encode('utf-8'))
 
+class Role(db.Model):
+    __tablename__ = "roles"
+    __table_args__ = {"schema": "TrailApp"}
+    RoleID = db.Column(db.Integer, primary_key=True)
+    RoleName = db.Column(db.String(50))
 
 class TrailSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -82,6 +84,17 @@ class TagSchema(ma.SQLAlchemyAutoSchema):
         model = Tag
         load_instance = True
 
+class RoleSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Role
+        load_instance = True
+
+
+class UserSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
+        load_instance = True
+
 trail_schema = TrailSchema()
 trails_schema = TrailSchema(many=True)
 trail_info_schema = TrailInfoSchema()
@@ -90,4 +103,8 @@ location_schema = LocationSchema()
 locations_schema = LocationSchema(many=True)
 tag_schema = TagSchema()
 tags_schema = TagSchema(many=True)
+role_schema = RoleSchema()
+roles_schema = RoleSchema(many=True)
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)
 
