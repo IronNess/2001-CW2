@@ -7,8 +7,6 @@ import bcrypt
 def check_password(provided_password, stored_hash):
     return bcrypt.checkpw(provided_password.encode('utf-8'), stored_hash.encode('utf-8'))
 
-# Route for user login
-@connex_app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
@@ -16,11 +14,10 @@ def login():
     
     user = User.query.filter_by(Email=email).first()
     if user and check_password(password, user.PasswordHash):
-        # Successful login
         return jsonify({"message": "Login successful", "user_id": user.UserID}), 200
     else:
-        # Failed login
         return jsonify({"message": "Invalid credentials"}), 401
+
 
 if __name__ == "__main__":
     # Load the API definition for Connexion based on the Swagger.yml
