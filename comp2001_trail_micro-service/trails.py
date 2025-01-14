@@ -1,60 +1,65 @@
-
 from functools import wraps
 from flask import request, jsonify
 from config import db
 from models import Trail, TrailInfo, Location, Tag, TrailTag
-from authenticator import authenticate_user, require_role
+from authenticator import authenticate_user
 
-def require_role(role_required):
+
+def require_role(allowed_roles):
+    """Decorator to enforce role-based access control."""
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            auth = request.authorization
+            # Get Authorization header
+            auth = request.headers.get("Authorization")
             if not auth:
                 return jsonify({"message": "Authentication required"}), 401
 
-            user = authenticate_user(auth.username, auth.password)
-            if user and user['role'] == role_required:
-                return f(*args, **kwargs)
-            else:
-                return jsonify({"message": "Unauthorized"}), 403
+            # Parse email and password from Authorization header
+            try:
+                email, password = auth.split(":")
+            except ValueError:
+                return jsonify({"message": "Invalid Authorization header format. Expected 'email:password'"}), 400
+
+            # Authenticate user
+            user = authenticate_user(email, password)
+            if not user:
+                return jsonify({"message": "Invalid credentials"}), 401
+
+            # Check if user's role is allowed
+            if user['role'] not in allowed_roles:
+                return jsonify({"message": f"Access denied for role: {user['role']}"}), 403
+
+            # Pass control to the actual route function
+            return f(*args, **kwargs)
         return decorated_function
     return decorator
 
-@require_role('User')
+
+@require_role(['Admin', 'User'])
 def get_all_trails():
     """Return a JSON list of all trails."""
     trails = Trail.query.all()
-    output = [
-        {
-            "TrailID": t.TrailID,
-            "TrailName": t.TrailName,
-            "CreatedAt": t.CreatedAt
-        } for t in trails
-    ]
+    output = [{"TrailID": t.TrailID, "TrailName": t.TrailName, "CreatedAt": t.CreatedAt} for t in trails]
     return jsonify(output)
 
-@require_role('Admin')
+
+@require_role(['Admin'])
 def create_trail():
-    """Create a new trail from the request JSON body."""
+    """Create a new trail."""
     data = request.get_json()
     new_trail = Trail(TrailName=data["TrailName"])
     db.session.add(new_trail)
     db.session.commit()
+    return jsonify({"TrailID": new_trail.TrailID, "TrailName": new_trail.TrailName, "CreatedAt": new_trail.CreatedAt}), 201
 
-    response = {
-        "TrailID": new_trail.TrailID,
-        "TrailName": new_trail.TrailName,
-        "CreatedAt": new_trail.CreatedAt
-    }
-    return jsonify(response), 201
 
-@require_role('User')
+@require_role(['Admin', 'User'])
 def get_trail_by_id(trail_id):
     """Return details of a specific trail."""
     trail = Trail.query.get(trail_id)
     if not trail:
-        return jsonify({"error": "Trail not found"}), 404
+        return jsonify({"message": "Trail not found"}), 404
 
     trail_info = TrailInfo.query.get(trail_id)
     locations = (
@@ -63,7 +68,6 @@ def get_trail_by_id(trail_id):
         .order_by(Location.Sequence)
         .all()
     )
-
     response = {
         "TrailID": trail.TrailID,
         "TrailName": trail.TrailName,
@@ -76,52 +80,47 @@ def get_trail_by_id(trail_id):
         "ElevationGain": trail_info.ElevationGain if trail_info else None,
         "LengthKM": trail_info.LengthKM if trail_info else None,
         "Locations": [
-            {
-                "Latitude": loc.Latitude,
-                "Longitude": loc.Longitude,
-                "Sequence": loc.Sequence
-            } for loc in locations
-        ] if locations else []
+            {"Latitude": loc.Latitude, "Longitude": loc.Longitude, "Sequence": loc.Sequence}
+            for loc in locations
+        ]
     }
     return jsonify(response)
 
-@require_role('Admin')
+
+@require_role(['Admin'])
 def update_trail(trail_id):
-    """Update an existing trail's name."""
+    """Update an existing trail."""
     data = request.get_json()
     trail = Trail.query.get(trail_id)
     if not trail:
-        return jsonify({"error": "Trail not found"}), 404
+        return jsonify({"message": "Trail not found"}), 404
 
     trail.TrailName = data.get("TrailName", trail.TrailName)
     db.session.commit()
+    return jsonify({"TrailID": trail.TrailID, "TrailName": trail.TrailName, "CreatedAt": trail.CreatedAt})
 
-    response = {
-        "TrailID": trail.TrailID,
-        "TrailName": trail.TrailName,
-        "CreatedAt": trail.CreatedAt
-    }
-    return jsonify(response)
 
-@require_role('Admin')
+@require_role(['Admin'])
 def delete_trail(trail_id):
     """Delete an existing trail."""
     trail = Trail.query.get(trail_id)
     if not trail:
-        return jsonify({"error": "Trail not found"}), 404
+        return jsonify({"message": "Trail not found"}), 404
 
     db.session.delete(trail)
     db.session.commit()
     return jsonify({"message": "Trail deleted successfully"}), 204
 
-@require_role('User')
+
+@require_role(['Admin', 'User'])
 def get_all_tags():
     """Return a list of all tags."""
     tags = Tag.query.all()
     output = [{"TagID": t.TagID, "Name": t.Name} for t in tags]
     return jsonify(output)
 
-@require_role('Admin')
+
+@require_role(['Admin'])
 def create_tag():
     """Create a new tag."""
     data = request.get_json()
@@ -130,7 +129,8 @@ def create_tag():
     db.session.commit()
     return jsonify({"TagID": new_tag.TagID, "Name": new_tag.Name}), 201
 
-@require_role('User')
+
+@require_role(['Admin', 'User'])
 def get_tags_for_trail(trail_id):
     """Get all tags associated with a specific trail."""
     tags = (
@@ -142,17 +142,17 @@ def get_tags_for_trail(trail_id):
     output = [{"TagID": t.TagID, "Name": t.Name} for t in tags]
     return jsonify(output)
 
-@require_role('Admin')
+
+@require_role(['Admin'])
 def add_tag_to_trail(trail_id):
     """Associate a tag with a trail."""
     data = request.get_json()
     tag_id = data["TagID"]
-    # Check if tag exists
+
     tag = Tag.query.get(tag_id)
     if not tag:
-        return jsonify({"error": "Tag not found"}), 404
+        return jsonify({"message": "Tag not found"}), 404
 
-    # Associate tag with trail
     new_trail_tag = TrailTag(TrailID=trail_id, TagID=tag_id)
     db.session.add(new_trail_tag)
     db.session.commit()
